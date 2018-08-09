@@ -1,0 +1,253 @@
+#Compiling Ember-Qt wallet.
+#Shout out to this forum posts https://bitcointalk.to/index.php?topic=1080289.0 and user main.h.
+
+#Note: I used a clean install of Ubunutu subsystem for windows because otherwise I had trouble 
+#downloading packages because it said they were broken and couldn't be installed.  I also found it easier to install
+#as the sudo su.  Also at some point I had to chmod 760 a file to make it run, or at least I think that was the
+#code.  If you run into an error I can google what I did to fix it for you.
+
+
+#Install MXE dependencies:
+sudo apt-get install autoconf automake autopoint bash bison bzip2 p7zip-full cmake flex gettext git g++ gperf intltool libffi-dev libtool libltdl-dev libssl-dev libxml-parser-perl make openssl patch perl pkg-config python ruby scons sed unzip wget xz-utils
+#I think this are all of the dependencies.  If it's not an error with throw telling you what you are missing.
+
+#For 64 bit Ubuntu:
+sudo apt-get install g++-multilib libc6-dev-i386
+
+#Clone MXE repo:
+cd/mnt
+git clone https://github.com/mxe/mxe.git
+
+#Now to compile boost:
+cd /mnt/mxe
+make MXE_TARGETS="i686-w64-mingw32.static" boost
+
+#Compile qt-5:
+make MXE_TARGETS="i686-w64-mingw32.static" qttools
+
+#Compile berkely db:
+cd /mnt
+wget http://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz
+tar zxvf db-4.8.30.NC.tar.gz
+
+#Make a bash script
+cd /mnt/db-4.8.30.NC
+touch compile-db.sh
+chmod ugo+x compile-db.sh
+nano compile-db.sh
+
+#insert contents into compile-db.sh
+-- Contents Start Here
+#!/bin/bash
+MXE_PATH=/mnt/mxe
+sed -i "s/WinIoCtl.h/winioctl.h/g" dbinc/win_db.h
+mkdir build_mxe
+cd build_mxe
+
+CC=$MXE_PATH/usr/bin/i686-w64-mingw32.static-gcc \
+CXX=$MXE_PATH/usr/bin/i686-w64-mingw32.static-g++ \
+../dist/configure \
+	--disable-replication \
+	--enable-mingw \
+	--enable-cxx \
+	--host x86 \
+	--prefix=$MXE_PATH/usr/i686-w64-mingw32.static
+
+make
+
+make install
+
+-- Contents End Here
+
+#Now compile
+./compile-db.sh
+
+
+
+#now install and compile miniupnpc
+cd /mnt
+wget http://miniupnp.free.fr/files/miniupnpc-1.6.20120509.tar.gz
+tar zxvf miniupnpc-1.6.20120509.tar.gz
+
+
+#make bash script
+cd /mnt/miniupnpc-1.6.20120509
+touch compile-m.sh
+chmod ugo+x compile-m.sh
+nano compile-m.sh
+
+#insert contents into compile-m.sh
+--Content Starts Here
+
+#!/bin/bash
+MXE_PATH=/mnt/mxe
+
+CC=$MXE_PATH/usr/bin/i686-w64-mingw32.static-gcc \
+AR=$MXE_PATH/usr/bin/i686-w64-mingw32.static-ar \
+CFLAGS="-DSTATICLIB -I$MXE_PATH/usr/i686-w64-mingw32.static/include" \
+LDFLAGS="-L$MXE_PATH/usr/i686-w64-mingw32.static/lib" \
+make libminiupnpc.a
+
+mkdir $MXE_PATH/usr/i686-w64-mingw32.static/include/miniupnpc
+cp *.h $MXE_PATH/usr/i686-w64-mingw32.static/include/miniupnpc
+cp libminiupnpc.a $MXE_PATH/usr/i686-w64-mingw32.static/lib
+
+--Content Ends Here
+
+
+#Compile
+./compile-m.sh
+
+#add MXE to PATH
+export PATH=/mnt/mxe/usr/bin:$PATH
+
+#move Ember Git source to mnt/
+
+
+#Make bash script
+cd /mnt/Ember
+touch compile-emb.sh
+chmod ugo+x compile-emb.sh
+nano compile-emb.sh
+
+#Add content to compile-emb.sh
+--Content Starts Here
+
+#!/bin/bash
+MXE_INCLUDE_PATH=/mnt/mxe/usr/i686-w64-mingw32.static/include
+MXE_LIB_PATH=/mnt/mxe/usr/i686-w64-mingw32.static/lib
+
+i686-w64-mingw32.static-qmake-qt5 \
+	BOOST_LIB_SUFFIX=-mt \
+	BOOST_THREAD_LIB_SUFFIX=_win32-mt \
+	BOOST_INCLUDE_PATH=$MXE_INCLUDE_PATH/boost \
+	BOOST_LIB_PATH=$MXE_LIB_PATH \
+	OPENSSL_INCLUDE_PATH=$MXE_INCLUDE_PATH/openssl \
+	OPENSSL_LIB_PATH=$MXE_LIB_PATH \
+	BDB_INCLUDE_PATH=$MXE_INCLUDE_PATH \
+	BDB_LIB_PATH=$MXE_LIB_PATH \
+	MINIUPNPC_INCLUDE_PATH=$MXE_INCLUDE_PATH \
+	MINIUPNPC_LIB_PATH=$MXE_LIB_PATH \
+	QMAKE_LRELEASE=/mnt/mxe/usr/i686-w64-mingw32.static/qt5/bin/lrelease Ember-qt.pro
+
+make -f Makefile.Release
+
+
+
+#Before we compile lets try and find the errors that come up.  I will try and show you the fixes in the order that they occur.
+
+#The first error is a bignum.h file error.  To fix this we have to downgrade openssl.
+cd to /mnt/mxe/src
+nano openssl.mk
+
+#Change the code in the file for these parameters
+$(PKG)_VERSION  := 1.0.2o
+$(PKG)_CHECKSUM := ec3f5c9714ba0fd45cb4e087301eb1336c317e0d20b575a125050470e8089e4d
+
+#Now we need to download the package for openssl 
+cd ../pkg
+wget https://www.openssl.org/source/openssl-1.0.2o.tar.gz
+
+#and build it
+cd ../
+make build-only-openssl_i686-w64-mingw32.static
+
+
+
+#Finding the BDB_LIB_PATH
+#For what ever reason the Ember-Qt.pro file need to have the paths fixed
+#I wasn't worried about breaking the code for other OS builds so I changed everything to the same path 
+#(/mnt/db-4.8.30.NC/build_mxe) because I wanted to get the right one but in reality only one of the LIB 
+#and INCLUDE paths should need to be changed.
+
+#This file is in mnt/ember/
+
+isEmpty(BDB_LIB_PATH) {
+    macx:BDB_LIB_PATH = /mnt/db-4.8.30.NC/build_mxe
+    linux:BDB_INCLUDE_PATH = /mnt/db-4.8.30.NC/build_mxe
+    win32:BDB_LIB_PATH= /mnt/db-4.8.30.NC/build_mxe
+}
+
+isEmpty(BDB_LIB_SUFFIX) {
+    macx:BDB_LIB_SUFFIX = -6.2
+}
+
+isEmpty(BDB_INCLUDE_PATH) {
+    macx:BDB_INCLUDE_PATH = /mnt/db-4.8.30.NC/build_mxe
+    linux:BDB_INCLUDE_PATH = /mnt/db-4.8.30.NC/build_mxe
+    win32:BDB_INCLUDE_PATH= /mnt/db-4.8.30.NC/build_mxe
+
+
+#Next bug
+#There will be an error that Pid_T and  thread something error
+cd to /mnt/mxe/usr/i686-w64-mingw32.static/include
+nano db.h
+
+#in this file you need to change
+
+typedef pthread_t db_threadid_t;
+
+with
+
+typedef u_int32_t db_threadid_t;
+
+#Also
+nano db_cxx.h
+
+in this file add #include <unistd.h> 
+
+
+#Libboost_thread-mt.a doesn't exist error
+#create symbolic link with the file that does exist
+cd mnt/mxe/usr/i686-w64-mingw32.static/lib
+ln -s libboost_thread_win32-mt.a libboost_thread-mt.a
+
+
+
+#Last thing, I think, We need to build the level_db files
+cd to mnt/ember/src/leveldb
+
+#copy all the text under into the command line at once
+TARGET_OS=NATIVE_WINDOWS make libleveldb.a libmemenv.a CC=/mnt/mxe/usr/bin/i686-w64-mingw32.static-gcc CXX=/mnt/mxe/usr/bin/i686-w64-mingw32.static-g++
+
+
+#This will build the level_db files
+#Now short of the chmod that needs to be done this should fix I hope all of the errors and allow you to compile.  I may have forgot something so if an error throws let me know and I'll see if I can remember the fix.
+
+cd /mnt/Ember/
+./compile-emb.sh
+
+
+#if you get this error
+./compile-emb.sh: line 6: i686-w64-mingw32.static-qmake-qt5: command not found
+
+#make sure you added it the the path
+export PATH=/mnt/mxe/usr/bin:$PATH
+
+#if that doesn't work try changing the compile-emb.sh file line 6 to
+/mnt/mxe/usr/i686-w64-mingw32.static/qt5/bin/qmake \
+
+#from this
+i686-w64-mingw32.static-qmake-qt5 \
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
