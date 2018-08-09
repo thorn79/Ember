@@ -1,0 +1,70 @@
+!src/leveldb/Makefile
+
+inc
+libs
+dll
+deps
+debug
+release
+build
+Makefile.*
+object_script.Ember-qt.*
+Emberd
+src/Ember
+src/Emberd
+src/test_Ember
+.Ember
+#compilation and Qt preprocessor part
+*.qm
+Makefile
+Ember-qt
+#resources cpp
+qrc_*.cpp
+#qt creator
+*.pro.user
+#mac specific
+.DS_Store
+build
+.qmake.stash
+Ember-Qt.app*
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Miscellaneous
+.*.swp
+*.*~*
+*.bak
+*.rej
+*.orig
+*.patch
