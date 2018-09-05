@@ -100,7 +100,7 @@ public:
 
         convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
-        if(nBestHeight < 387000)
+        if(nBestHeight < 392000)
         { 
         nLastPoWBlock = 380005;
         } else { 
