@@ -1,7 +1,9 @@
-Ember Coin
+Ember Coin > ATHENEUM COMING SOON
 ==========
 
 *** FOR LATEST RELEASE FILES GO HERE ***
+==========
+
 https://github.com/Allysquad/Ember/releases/tag/v1.1.5.3
 
 
