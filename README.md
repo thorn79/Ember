@@ -1,11 +1,10 @@
 Ember Coin > ATHENEUM COMING SOON
 ==========
 
-*** FOR LATEST RELEASE FILES GO HERE ***
+FOR LATEST RELEASE FILES CLICK LINK BELOW
 ==========
-
 https://github.com/Allysquad/Ember/releases/tag/v1.1.5.3
-
+==========
 
 
 Ember is a PoW / PoS-based cryptocurrency.
