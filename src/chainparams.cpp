@@ -100,8 +100,6 @@ public:
 
         convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
-        nLastPoWBlock = 2147483645;
-
         nTargetSpacing = 180; // Initially ~180 Sec during PoW
         if(nBestHeight > nLastPoWBlock) // Scaled down for PoS only phase
         {

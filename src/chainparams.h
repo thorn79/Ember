@@ -70,7 +70,7 @@ public:
     int RPCPort() const { return nRPCPort; }
     int64_t TargetSpacing() const { return nTargetSpacing; }
     int64_t TargetTimespan() const { return nTargetTimespan; }
-    int LastPoWBlock() const { return nLastPoWBlock; }
+    const int nLastPoWBlock LastPoWBlock() const = 2147483645;
     int StartPoSBlock() const { return nStartPoSBlock; }
 protected:
     CChainParams() {};
