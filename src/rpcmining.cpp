@@ -313,7 +313,7 @@ Value getworkex(const Array& params, bool fHelp)
         throw JSONRPCError(-10, "Ember is downloading blocks...");
 
     if (pindexBest->nHeight >= Params().LastPoWBlock())
-        throw JSONRPCError(RPC_MISC_ERROR, "No more PoW blocks");
+        throw JSONRPCError(RPC_MISC_ERROR, "getworkex : No more PoW blocks - nHeight = " + nHeight + " : lastPowBlock = "+ Params().LastPoWBlock());
 
     typedef map<uint256, pair<CBlock*, CScript> > mapNewBlock_t;
     static mapNewBlock_t mapNewBlock;
@@ -447,7 +447,7 @@ Value getwork(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Ember is downloading blocks...");
 
     if (pindexBest->nHeight >= Params().LastPoWBlock())
-        throw JSONRPCError(RPC_MISC_ERROR, "No more PoW blocks");
+           throw JSONRPCError(RPC_MISC_ERROR, "getwork : No more PoW blocks - nHeight = " + nHeight + " : lastPowBlock = "+ Params().LastPoWBlock());
 
     typedef map<uint256, pair<CBlock*, CScript> > mapNewBlock_t;
     static mapNewBlock_t mapNewBlock;    // FIXME: thread safety
@@ -591,7 +591,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Ember is downloading blocks...");
 
     if (pindexBest->nHeight >= Params().LastPoWBlock())
-        throw JSONRPCError(RPC_MISC_ERROR, "No more PoW blocks");
+           throw JSONRPCError(RPC_MISC_ERROR, "getblocktemplate : No more PoW blocks - nHeight = " + nHeight + " : lastPowBlock = "+ Params().LastPoWBlock());
 
     // Update block
     static unsigned int nTransactionsUpdatedLast;
