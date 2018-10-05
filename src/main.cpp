@@ -964,9 +964,9 @@ int64_t GetProofOfWorkReward(int64_t nHeight, int64_t nFees) {
 
     if(nHeight == 5) {
         nSubsidy = 2000000 * COIN;
-    } else if(nHeight > 5) {
-        nSubsidy = 100 * COIN;
-    }else if(nHeight > 387500) {
+    } else if(nHeight > 5 && nHeight < 392000) { // 1000 coins from block 6 through 391999
+        nSubsidy = 1000 * COIN;
+    } else if(nHeight >= 392000) { // 100.000 coins as of block 392000
         nSubsidy = 100000 * COIN;
     }
 
